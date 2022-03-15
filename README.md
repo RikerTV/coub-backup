@@ -43,4 +43,4 @@ It will generate json that looks like:
 
 Usage:
 
-`coub-saver [options] <username>`
+`coub-saver -d <directory> <username>`
