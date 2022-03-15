@@ -2,6 +2,8 @@ package main
 
 import (
 	"os"
+	"strconv"
+	"strings"
 )
 
 func DirectorySetup(user string, dir string) (err error) {
@@ -27,4 +29,29 @@ func FileExists(path string) bool {
 		return false
 	}
 	return true
+}
+
+func CreateCoubDir(dir string, coub Coub) (outdir string, err error) {
+
+	dir = strings.TrimRight(dir, "/")
+	CoubYear := coub.CreatedAt.Year()
+	CoubMonth := coub.CreatedAt.Month()
+
+	err = CreateDirectory(dir + "/" + strconv.Itoa(CoubYear))
+	if err != nil {
+		return "", err
+	}
+
+	err = CreateDirectory(dir + "/" + strconv.Itoa(CoubYear) + "/" + strconv.Itoa(int(CoubMonth)))
+	if err != nil {
+		return "", err
+	}
+
+	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + strconv.Itoa(int(CoubMonth)) + "/" + coub.Title
+	err = CreateDirectory(outdir)
+	if err != nil {
+		return "", err
+	}
+
+	return outdir, nil
 }
