@@ -27,16 +27,13 @@ func ReadCoub(rootdir string, user string) (err error) {
 	}
 	log.Println("Total Coubs to process: " + strconv.Itoa(len(coubs)))
 
-	for i, coub := range coubs {
+	for _, coub := range coubs {
 		coub.Title = strings.TrimSpace(coub.Title)
 		log.Println("Processing Coub: " + coub.Title)
 		// Create the directory for the coub
 		outdir, err := CreateCoubDir(rootdir, coub)
 		if err != nil {
 			return err
-		}
-		if i > 2 {
-			break
 		}
 
 		// Create the info file for the coub

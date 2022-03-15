@@ -35,19 +35,21 @@ func CreateCoubDir(dir string, coub Coub) (outdir string, err error) {
 
 	dir = strings.TrimRight(dir, "/")
 	CoubYear := coub.CreatedAt.Year()
-	CoubMonth := coub.CreatedAt.Month()
 
 	err = CreateDirectory(dir + "/" + strconv.Itoa(CoubYear))
 	if err != nil {
 		return "", err
 	}
 
-	err = CreateDirectory(dir + "/" + strconv.Itoa(CoubYear) + "/" + strconv.Itoa(int(CoubMonth)))
+	// convert month to string
+	CoubMonthString := coub.CreatedAt.Month().String()
+
+	err = CreateDirectory(dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString)
 	if err != nil {
 		return "", err
 	}
 
-	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + strconv.Itoa(int(CoubMonth)) + "/" + coub.Title
+	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString + "/" + coub.Title
 	err = CreateDirectory(outdir)
 	if err != nil {
 		return "", err
