@@ -189,35 +189,35 @@ func DownloadFileVersions(filepath string, coub Coub) (err error) {
 	url := coub.FileVersions.HTML5.Video.Med.URL
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
 	if err != nil {
-		log.Println("Error downloading Medium Quality HTML5 Video for" + coub.Title + ": " + err.Error())
+		log.Println("Error downloading Medium Quality HTML5 Video for: " + coub.Title + ": " + err.Error())
 	}
 	time.Sleep(DownloadInterval)
 
 	url = coub.FileVersions.HTML5.Video.High.URL
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
 	if err != nil {
-		log.Println("Error downloading High Quality HTML5 Video for" + coub.Title + ": " + err.Error())
+		log.Println("Error downloading High Quality HTML5 Video for: " + coub.Title + ": " + err.Error())
 	}
 	time.Sleep(DownloadInterval)
 
 	url = coub.FileVersions.HTML5.Video.Higher.URL
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
 	if err != nil {
-		log.Println("Error downloading Higher Quality HTML5 Video for" + coub.Title + ": " + err.Error())
+		log.Println("Error downloading Higher Quality HTML5 Video for: " + coub.Title + ": " + err.Error())
 	}
 	time.Sleep(DownloadInterval)
 
 	url = coub.FileVersions.HTML5.Audio.High.URL
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
 	if err != nil {
-		log.Println("Error downloading Higher Quality HTML5 Audio for" + coub.Title + ": " + err.Error())
+		log.Println("Error downloading Higher Quality HTML5 Audio for: " + coub.Title + ": " + err.Error())
 	}
 	time.Sleep(DownloadInterval)
 
 	url = coub.FileVersions.HTML5.Audio.Med.URL
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
 	if err != nil {
-		log.Println("Error downloading Medium Quality HTML5 Audio for" + coub.Title + ": " + err.Error())
+		log.Println("Error downloading Medium Quality HTML5 Audio for: " + coub.Title + ": " + err.Error())
 	}
 	time.Sleep(DownloadInterval)
 
@@ -241,7 +241,13 @@ func DownloadFileVersions(filepath string, coub Coub) (err error) {
 	url = coub.FileVersions.Share.Default
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
 	if err != nil {
-		log.Println("Error downloading Default Share File for" + coub.Title + ": " + err.Error())
+		log.Println("Error downloading Default Share File for: " + coub.Title + ": " + err.Error())
+	}
+
+	url = coub.FileVersions.Share.Default
+	err = DownloadFile(filepath+"/"+coub.Title+".mp4", url)
+	if err != nil {
+		log.Println("Error downloading (renamed) Default Share File for: " + coub.Title + ": " + err.Error())
 	}
 
 	return nil
