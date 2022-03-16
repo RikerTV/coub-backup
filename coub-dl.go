@@ -31,6 +31,7 @@ func ReadCoub(rootdir string, user string) (err error) {
 	var wg sync.WaitGroup
 	for i, coub := range coubs {
 		coub.Title = strings.TrimSpace(coub.Title)
+
 		log.Println("Processing Coub: " + coub.Title)
 		// Create the directory for the coub
 		outdir, err := CreateCoubDir(rootdir, coub)
@@ -245,7 +246,7 @@ func DownloadFileVersions(wg *sync.WaitGroup, filepath string, coub Coub) (err e
 	}
 
 	url = coub.FileVersions.Share.Default
-	err = DownloadFile(filepath+"/"+coub.Title+".mp4", url)
+	err = DownloadFile(filepath+"/"+strconv.Itoa(coub.ID)+".mp4", url)
 	if err != nil {
 		log.Println("Error downloading (renamed) Default Share File for: " + coub.Title + ": " + err.Error())
 	}

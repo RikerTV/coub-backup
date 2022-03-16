@@ -3,7 +3,6 @@ package main
 import (
 	"os"
 	"strconv"
-	"strings"
 )
 
 func DirectorySetup(user string, dir string) (err error) {
@@ -14,7 +13,7 @@ func DirectorySetup(user string, dir string) (err error) {
 
 // CreateDirectory creates a directory if it does not exist, and returns an error if it cannot be created and does not already exist.
 func CreateDirectory(path string) error {
-	path = strings.ReplaceAll(path, "/", "\\/")
+	//path = strings.ReplaceAll(path, "/", "\\/")
 
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		err = os.MkdirAll(path, 0755)
@@ -35,7 +34,7 @@ func FileExists(path string) bool {
 
 func CreateCoubDir(dir string, coub Coub) (outdir string, err error) {
 
-	dir = strings.TrimRight(dir, "/")
+	//dir = strings.TrimRight(dir, "/")
 	CoubYear := coub.CreatedAt.Year()
 
 	err = CreateDirectory(dir + "/" + strconv.Itoa(CoubYear))
@@ -51,7 +50,7 @@ func CreateCoubDir(dir string, coub Coub) (outdir string, err error) {
 		return "", err
 	}
 
-	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString + "/" + coub.Title
+	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString + "/" + strconv.Itoa(coub.ID)
 	err = CreateDirectory(outdir)
 	if err != nil {
 		return "", err
