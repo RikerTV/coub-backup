@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"strconv"
+	"net/url"
 )
 
 func DirectorySetup(user string, dir string) (err error) {
@@ -50,7 +51,9 @@ func CreateCoubDir(dir string, coub Coub) (outdir string, err error) {
 		return "", err
 	}
 
-	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString + "/" + strconv.Itoa(coub.ID)
+	CoubFileSafeTitle := url.QueryEscape(coub.Title)
+	// Previous: outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString + "/" + strconv.Itoa(coub.ID)
+	outdir = dir + "/" + strconv.Itoa(CoubYear) + "/" + CoubMonthString + "/" + CoubFileSafeTitle
 	err = CreateDirectory(outdir)
 	if err != nil {
 		return "", err

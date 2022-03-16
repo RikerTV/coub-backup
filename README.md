@@ -1,4 +1,4 @@
-# coub-saver
+# coub-backup
 
 # Table of Contents
 1. [About](#about)
@@ -7,7 +7,7 @@
 4. [License](#license)
 
 ## About
-coub-saver is a simple tool to automate the downloading of coubs from [coub.com](https://coub.com).
+coub-backup is a simple tool to automate the downloading of coubs from [coub.com](https://coub.com).
 
 This tool will parse a user profile for all of their coubs, and assemble directory structure by year and month for each coub.
 
@@ -28,27 +28,29 @@ Additional metadata is also generated for each coub, including all original coub
 
 ## Usage:
 
+If building from source, with Golang >v.1.17.0, use `go build` in the main directory to get coub-backup.exe.
+
 ### Backup a user's coubs
 
-`coub-saver -directory=<directory> <username>`
+`coub-backup -directory=<directory> <username>`
 
 ### Backup a community's coubs (max of 500 pages)
 
-`coub-saver -directory=<directory> -community=<community> -pages=10`
+`coub-backup -directory=<directory> -community=<community> -pages=10`
 
 Supported options: *animals-pets, mashup, music, blogging, standup-jokes, movies, anime, gaming, cartoons, art, live-pictures, news, sports, science-technology, food-kitchen, celebrity, nature-travel, fashion, dance, cars, memes, nsfw*
 
 ### Backup a Best Of for a given year (between 2012 and 2022)
 
-`coub-saver -directory=<directory> -bestof=<year>`
+`coub-backup -directory=<directory> -bestof=<year>`
 
 ### Backup the day's coub of the day
 
-`coub-saver -directory=<directory> -day=true`
+`coub-backup -directory=<directory> -day=true`
 
 ### Backup the day's featured coubs
 
-`coub-saver -directory=<directory> -featured=true`
+`coub-backup -directory=<directory> -featured=true`
 
 ## Contributing
 
