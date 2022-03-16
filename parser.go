@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const MaxRetries = 3
@@ -63,9 +64,49 @@ func RetrieveProfile(username string) (coubs []Coub, err error) {
 		}
 
 		Coubs = append(Coubs, CoubInfoPage.Coubs...)
+		time.Sleep(DownloadInterval)
 	}
 
 	return Coubs, nil
+}
+
+func GenerateFeaturedInfoFile(outputDir string) (err error) {
+	log.Print("Getting Coub featured data for today")
+	coubs, err := RetrieveFeatured()
+	if err != nil {
+		return err
+	}
+
+	outputFile, _ := json.MarshalIndent(coubs, "", " ")
+	_ = ioutil.WriteFile(outputDir+"featured.json", outputFile, 0644)
+
+	return nil
+}
+
+func GenerateCoubOfDayInfoFile(outputDir string) (err error) {
+	log.Print("Getting Coub of The Day data")
+	coubs, err := RetrieveCoubOfDay()
+	if err != nil {
+		return err
+	}
+
+	outputFile, _ := json.MarshalIndent(coubs, "", " ")
+	_ = ioutil.WriteFile(outputDir+"coub-of-day.json", outputFile, 0644)
+
+	return nil
+}
+
+func GenerateCommunityInfoFile(outputDir string, community string, pages int) (err error) {
+	log.Print("Getting Coub community data for ", community)
+	coubs, err := RetrieveCommunity(community, pages)
+	if err != nil {
+		return err
+	}
+
+	outputFile, _ := json.MarshalIndent(coubs, "", " ")
+	_ = ioutil.WriteFile(outputDir+community+".json", outputFile, 0644)
+
+	return nil
 }
 
 func GenerateBestOfInfoFile(outputDir string, year string) (err error) {
@@ -209,6 +250,171 @@ func RetrieveBestOf(year string) (coubs []Coub, err error) {
 		} else {
 			timelinePage = "https://coub.com/api/v2/best/" + yearID + "/likes?page=" + strconv.Itoa(i)
 		}
+		res, err := http.Get(timelinePage)
+		if err != nil {
+			return nil, err
+		}
+
+		b, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var CoubInfoPage CoubInfo
+		err = json.Unmarshal(b, &CoubInfoPage)
+		if err != nil {
+			return nil, err
+		}
+
+		Coubs = append(Coubs, CoubInfoPage.Coubs...)
+	}
+
+	return Coubs, nil
+}
+
+// RetrieveCommunity a complete array of CoubInfo structs for a given profile
+func RetrieveCommunity(community string, pages int) (coubs []Coub, err error) {
+	// Get first page of profile info with an http.Get request
+	log.Print("Retrieving first page to parse category info")
+
+	timelineFirstPage := "https://coub.com/api/v2/timeline/community/" + community + "/daily?page=1"
+	res, err := http.Get(timelineFirstPage)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var Coubs []Coub
+
+	var CoubInfoPage CoubInfo
+	err = json.Unmarshal(b, &CoubInfoPage)
+	if err != nil {
+		return nil, err
+	}
+
+	Coubs = append(Coubs, CoubInfoPage.Coubs...)
+
+	log.Print("Pages to parse: ", pages)
+
+	// Get all pages of profile info with an http.Get request
+	for i := 2; i <= CoubInfoPage.TotalPages && i <= pages; i++ {
+		log.Print("Retrieving page ", i)
+
+		timelinePage := "https://coub.com/api/v2/timeline/community/" + community + "/daily?page=" + strconv.Itoa(i)
+		res, err := http.Get(timelinePage)
+		if err != nil {
+			return nil, err
+		}
+
+		b, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var CoubInfoPage CoubInfo
+		err = json.Unmarshal(b, &CoubInfoPage)
+		if err != nil {
+			return nil, err
+		}
+
+		Coubs = append(Coubs, CoubInfoPage.Coubs...)
+	}
+
+	return Coubs, nil
+}
+
+// RetrieveFeatured a complete array of CoubInfo structs for a given profile
+func RetrieveFeatured() (coubs []Coub, err error) {
+	// Get first page of profile info with an http.Get request
+	log.Print("Retrieving first page to parse featured coubs info")
+
+	timelineFirstPage := "https://coub.com/api/v2/timeline/explore?page=1"
+	res, err := http.Get(timelineFirstPage)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var Coubs []Coub
+
+	var CoubInfoPage CoubInfo
+	err = json.Unmarshal(b, &CoubInfoPage)
+	if err != nil {
+		return nil, err
+	}
+
+	Coubs = append(Coubs, CoubInfoPage.Coubs...)
+
+	log.Print("Pages to parse: ", CoubInfoPage.TotalPages)
+
+	// Get all pages of profile info with an http.Get request
+	for i := 2; i <= CoubInfoPage.TotalPages; i++ {
+		log.Print("Retrieving page ", i)
+
+		timelinePage := "https://coub.com/api/v2/timeline/explore?page=" + strconv.Itoa(i)
+		res, err := http.Get(timelinePage)
+		if err != nil {
+			return nil, err
+		}
+
+		b, err := io.ReadAll(res.Body)
+		if err != nil {
+			return nil, err
+		}
+
+		var CoubInfoPage CoubInfo
+		err = json.Unmarshal(b, &CoubInfoPage)
+		if err != nil {
+			return nil, err
+		}
+
+		Coubs = append(Coubs, CoubInfoPage.Coubs...)
+	}
+
+	return Coubs, nil
+}
+
+// RetrieveFeatured a complete array of CoubInfo structs for a given profile
+func RetrieveCoubOfDay() (coubs []Coub, err error) {
+	// Get first page of profile info with an http.Get request
+	log.Print("Retrieving first page to parse coub of the day info")
+
+	timelineFirstPage := "https://coub.com/api/v2/timeline/explore/coub_of_the_day?page=1"
+	res, err := http.Get(timelineFirstPage)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var Coubs []Coub
+
+	var CoubInfoPage CoubInfo
+	err = json.Unmarshal(b, &CoubInfoPage)
+	if err != nil {
+		return nil, err
+	}
+
+	Coubs = append(Coubs, CoubInfoPage.Coubs...)
+
+	log.Print("Pages to parse: ", CoubInfoPage.TotalPages)
+
+	// Get all pages of profile info with an http.Get request
+	for i := 2; i <= CoubInfoPage.TotalPages; i++ {
+		log.Print("Retrieving page ", i)
+
+		timelinePage := "https://coub.com/api/v2/timeline/explore/coub_of_the_day?page=" + strconv.Itoa(i)
 		res, err := http.Get(timelinePage)
 		if err != nil {
 			return nil, err

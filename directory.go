@@ -14,6 +14,8 @@ func DirectorySetup(user string, dir string) (err error) {
 
 // CreateDirectory creates a directory if it does not exist, and returns an error if it cannot be created and does not already exist.
 func CreateDirectory(path string) error {
+	path = strings.ReplaceAll(path, "/", "\\/")
+
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		err = os.MkdirAll(path, 0755)
 		if err != nil {
