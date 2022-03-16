@@ -8,10 +8,11 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
-const DownloadInterval = time.Millisecond * 250
+const DownloadInterval = time.Millisecond * 100
 
 // ReadCoub Accepts a Coub struct
 // It generates a directory for the coub, creates the info file for it
@@ -27,7 +28,8 @@ func ReadCoub(rootdir string, user string) (err error) {
 	}
 	log.Println("Total Coubs to process: " + strconv.Itoa(len(coubs)))
 
-	for _, coub := range coubs {
+	var wg sync.WaitGroup
+	for i, coub := range coubs {
 		coub.Title = strings.TrimSpace(coub.Title)
 		log.Println("Processing Coub: " + coub.Title)
 		// Create the directory for the coub
@@ -43,12 +45,23 @@ func ReadCoub(rootdir string, user string) (err error) {
 		}
 
 		// Download all data for the coub
-		err = DownloadCoubData(outdir, coub)
-		if err != nil {
-			return err
+		wg.Add(1)
+		go func(coubID int) {
+			log.Println("Downloading Coub: " + coubs[coubID].Title)
+			err = DownloadCoubData(&wg, outdir, coubs[coubID])
+			if err != nil {
+				log.Println("Error downloading coub: "+coubs[coubID].Title, err)
+			}
+		}(i)
+		time.Sleep(time.Second * 1)
+
+		// every 5 coubs, wait for the goroutines to finish
+		if i%5 == 0 {
+			wg.Wait()
 		}
 	}
-
+	wg.Wait()
+	log.Println("All found coubs downloaded")
 	return nil
 }
 
@@ -133,30 +146,45 @@ func CreateCoubInfoFiles(dir string, coub Coub) (err error) {
 	return nil
 }
 
-func DownloadCoubData(rootdir string, coub Coub) (err error) {
+func DownloadCoubData(PoolWG *sync.WaitGroup, rootdir string, coub Coub) (err error) {
+	defer PoolWG.Done()
 
-	log.Print("Downloading Frames for Coub: " + coub.Title)
-	err = DownloadFirstFrameVersions(rootdir, coub)
-	if err != nil {
-		return err
-	}
+	var wg sync.WaitGroup
 
-	log.Print("Downloading Images for Coub: " + coub.Title)
-	err = DownloadImageVersions(rootdir, coub)
-	if err != nil {
-		return err
-	}
+	wg.Add(1)
+	go func() {
+		log.Print("Downloading Frames for Coub: " + coub.Title)
+		err = DownloadFirstFrameVersions(&wg, rootdir, coub)
+		if err != nil {
+			log.Println("Error Downloading First Frame Versions: " + err.Error())
+		}
+	}()
 
-	log.Print("Downloading Media Files for Coub: " + coub.Title)
-	err = DownloadFileVersions(rootdir, coub)
-	if err != nil {
-		return err
-	}
+	wg.Add(1)
+	go func() {
+		log.Print("Downloading Images for Coub: " + coub.Title)
+		err = DownloadImageVersions(&wg, rootdir, coub)
+		if err != nil {
+			log.Println("Error Downloading Image Versions: " + err.Error())
+		}
+	}()
 
+	wg.Add(1)
+	go func() {
+		log.Print("Downloading Media Files for Coub: " + coub.Title)
+		err = DownloadFileVersions(&wg, rootdir, coub)
+		if err != nil {
+			log.Println("Error Downloading File Versions: " + err.Error())
+		}
+	}()
+
+	wg.Wait()
+	log.Println("Finished Downloading Coub: " + coub.Title)
 	return nil
 }
 
-func DownloadFileVersions(filepath string, coub Coub) (err error) {
+func DownloadFileVersions(wg *sync.WaitGroup, filepath string, coub Coub) (err error) {
+	defer wg.Done()
 
 	url := coub.FileVersions.HTML5.Video.Med.URL
 	err = DownloadFile(filepath+"/"+FileNameFromURL(url), url)
@@ -225,7 +253,9 @@ func DownloadFileVersions(filepath string, coub Coub) (err error) {
 	return nil
 }
 
-func DownloadImageVersions(filepath string, coub Coub) (err error) {
+func DownloadImageVersions(wg *sync.WaitGroup, filepath string, coub Coub) (err error) {
+	defer wg.Done()
+
 	template := coub.ImageVersions.Template
 	for _, version := range coub.ImageVersions.Versions {
 		url := strings.Replace(template, "%{version}", version, -1)
@@ -238,7 +268,9 @@ func DownloadImageVersions(filepath string, coub Coub) (err error) {
 	return nil
 }
 
-func DownloadFirstFrameVersions(filepath string, coub Coub) (err error) {
+func DownloadFirstFrameVersions(wg *sync.WaitGroup, filepath string, coub Coub) (err error) {
+	defer wg.Done()
+
 	template := coub.FirstFrameVersions.Template
 	for _, version := range coub.FirstFrameVersions.Versions {
 		url := strings.Replace(template, "%{version}", version, -1)
